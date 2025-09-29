@@ -2,13 +2,15 @@
 
 namespace App\Models;
 
-use Illuminate\Auth\Authenticatable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Database\Eloquent\Model;
 use Illuminate\Notifications\Notifiable;
 use Laravel\Sanctum\HasApiTokens;
+use Illuminate\Foundation\Auth\User as Authenticatable;
+use Illuminate\Auth\MustVerifyEmail;
 
-class Utilisateur extends Model implements Authenticatable
+
+
+class Utilisateur extends Authenticatable implements MustVerifyEmail
 {
     use HasApiTokens, HasFactory, Notifiable;
 
@@ -23,5 +25,18 @@ class Utilisateur extends Model implements Authenticatable
         'numero',
         'provider',
         'provider_id',
+    ];
+
+    protected $date = [
+        'email_verified_at',
+    ];
+
+    protected $hidden = [
+        'mot_de_passe',
+        'remember_token',
+    ];
+
+    protected $casts = [
+        'email_verified_at' => 'datetime',
     ];
 }
