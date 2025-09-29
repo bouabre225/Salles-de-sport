@@ -28,14 +28,19 @@ class UserController extends Controller
                 'numero' => $validated['numero'],
             ]);
 
-            //authentification de l'utilisateur
-            Auth::guard('utilisateurs')->login($user);
+            //valider les conditions generales d'utilisation obligatoire
+            $user->cgu = true;
+            $user->save();
+
+            // Générer un token Sanctum
+            $token = $user->createToken('auth-token')->plainTextToken;
 
             //retourne la reponse en cas de succes
             return response()->json([
                 'error' => false,
                 'message' => 'Inscription reussie',
                 'data' => $user,
+                'token' => $token,
             ], 200);
         } catch (\Exception $e) {
             //retourne la reponse en cas d'erreur
@@ -55,13 +60,31 @@ class UserController extends Controller
             //validation des données
             $validated = $request->validated();
 
+            
+            if (!Auth::attempt($validated)) {
+                return response()->json(['message' => 'Identifiants incorrects'], 401);
+            }
+
+            //verifier si l'utilisateur existe
+            $user = Utilisateur::where('email', $validated['email'])->first();
+            if (!$user) {
+                return response()->json([
+                    'error' => true,
+                    'message' => 'Utilisateur non trouvé',
+                    'data' => null,
+                ], 404);
+            }
             //authentification de l'utilisateur
-            if (Auth::guard('utilisateurs')->attempt(['email' => $validated['email'], 'mot_de_passe' => $validated['mot_de_passe']])) {
+            if (Auth::attempt($validated)) {
+                // Générer un token Sanctum
+                $token = $user->createToken('auth-token')->plainTextToken;
+
                 //retourne la reponse en cas de succes
                 return response()->json([
                     'error' => false,
                     'message' => 'Connexion reussie',
-                    'data' => Auth::guard('utilisateurs')->user(),
+                    'data' => Auth::user(),
+                    'token' => $token,
                 ], 200);
             } else {
                 //retourne la reponse en cas d'erreur
@@ -80,4 +103,38 @@ class UserController extends Controller
             ], 500);
         }
     }
+
+    /**
+     * Deconnexion de l'utilisateur
+     */
+    public function Logout (Request $request) {
+        try {
+            $user = $request->user();
+            if (!$user) {
+                return response()->json([
+                    'error' => true,
+                    'message' => 'Utilisateur non trouvé',
+                    'data' => null,
+                ], 404);
+            } else {
+                //deconnexion de l'utilisateur avec le token
+                $user->currentAccessToken()->delete();
+            }
+
+            //retourne la reponse en cas de succes
+            return response()->json([
+                'error' => false,
+                'message' => 'Deconnexion reussie',
+                'data' => null,
+            ], 200);
+        } catch (\Exception $e) {
+            //retourne la reponse en cas d'erreur
+            return response()->json([
+                'error' => true,
+                'message' => 'Une erreur est survenue lors de la deconnexion'. $e->getMessage(),
+                'data' => null,
+            ], 500);
+        }
+    }
+
 }
