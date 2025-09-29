@@ -8,6 +8,8 @@ use App\Http\Requests\Public\UserLogin;
 use Illuminate\Http\Request;
 use App\Models\Utilisateur;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Auth\Events\Verified;
+use App\Http\Requests\Public\EmailVerificationRequest;
 
 class UserController extends Controller
 {
@@ -132,6 +134,63 @@ class UserController extends Controller
             return response()->json([
                 'error' => true,
                 'message' => 'Une erreur est survenue lors de la deconnexion'. $e->getMessage(),
+                'data' => null,
+            ], 500);
+        }
+    }
+
+    /**
+     * Envoi d'email de verification
+     */
+    public function sendVerificationEmail(Request $request) {
+        try {
+            $user = $request->user();
+            if (!$user) {
+                return response()->json([
+                    'error' => true,
+                    'message' => 'Utilisateur non trouvé',
+                    'data' => null,
+                ], 404);
+            }
+            
+            //envoi d'email de verification
+            $user->sendEmailVerificationNotification();
+
+            //retourne la reponse en cas de succes
+            return response()->json([
+                'error' => false,
+                'message' => 'Email de verification envoye',
+                'data' => null,
+            ], 200);
+            
+        } catch (\Exception $e) {
+            //retourne la reponse en cas d'erreur
+            return response()->json([
+                'error' => true,
+                'message' => 'Une erreur est survenue lors de l\'envoi de l\'email de verification'. $e->getMessage(),
+                'data' => null,
+            ], 500);
+        }
+    }
+
+    /**
+     * Verification de l'email
+     */
+    public function verifyEmail(EmailVerificationRequest $request) {
+        try {
+            //verification de l'email
+            $request->fulfill();
+
+            return response()->json([
+                'error' => false,
+                'message' => 'Email verifie',
+                'data' => null,
+            ], 200);
+        } catch (\Exception $e) {
+            //retourne la reponse en cas d'erreur
+            return response()->json([
+                'error' => true,
+                'message' => 'Une erreur est survenue lors de la verification de l\'email'. $e->getMessage(),
                 'data' => null,
             ], 500);
         }
