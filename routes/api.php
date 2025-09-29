@@ -6,15 +6,21 @@ use App\Http\Controllers\Auth\SocialAuthController;
 use App\Http\Controllers\Public\SalleController;
 use App\Http\Controllers\Public\CoachController;
 
-Route::get('/', function () {
+/*Route::get('/', function () {
     return view('welcome');
-});
+});*/
 
 //Route d'inscription et de connexion de l'utilisateur
 Route::prefix('user')->group(function () {
     Route::post('/register', [UserController::class, 'register']);
     Route::post('/login', [UserController::class, 'login']);
 });
+
+//Envoyer l'email de verification 
+Route::post('/email/verify', [UserController::class, 'sendVerificationEmail'])->middleware(['auth:sanctum']);
+
+//Route de verification de l'email via le lien de verification
+Route::get('/email/verify/{id}/{hash}', [UserController::class, 'verifyEmail'])->middleware(['auth:sanctum', 'signed']);
 
 //Route d'inscription et de connexion du coach
 Route::prefix('coach')->group(function () {
