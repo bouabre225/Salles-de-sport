@@ -48,6 +48,10 @@ return [
             'driver' => 'session',
             'provider' => 'utilisateurs',
         ],
+        'coachs' => [
+            'driver' => 'session',
+            'provider' => 'coachs',
+        ],
     ],
 
     /*
@@ -78,6 +82,10 @@ return [
             'model' => env('AUTH_MODEL', App\Models\Utilisateur::class),
         ],
 
+        'coachs' => [
+            'driver' => 'eloquent',
+            'model' => env('AUTH_MODEL', App\Models\Coach::class),
+        ],
         // 'users' => [
         //     'driver' => 'database',
         //     'table' => 'users',
