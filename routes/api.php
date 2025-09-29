@@ -14,13 +14,20 @@ use App\Http\Controllers\Public\CoachController;
 Route::prefix('user')->group(function () {
     Route::post('/register', [UserController::class, 'register']);
     Route::post('/login', [UserController::class, 'login']);
+
+    //Route de reinitialisation du mot de passe
+    Route::post('/reset-password', [UserController::class, 'resetPassword']);
+    //Route d'envoi de mail de reinitialisation du mot de passe
+    Route::post('/send-reset-password-link', [UserController::class, 'sendResetPasswordLink']);
 });
 
-//Envoyer l'email de verification 
-Route::post('/email/verify', [UserController::class, 'sendVerificationEmail'])->middleware(['auth:sanctum']);
+Route::prefix('email')->group(function () {
+    //Envoyer l'email de verification 
+    Route::post('/verify', [UserController::class, 'sendVerificationEmail'])->middleware(['auth:sanctum']);
 
-//Route de verification de l'email via le lien de verification
-Route::get('/email/verify/{id}/{hash}', [UserController::class, 'verifyEmail'])->middleware(['auth:sanctum', 'signed']);
+    //Verification de l'email
+    Route::get('/verify/{id}/{hash}', [UserController::class, 'verifyEmail'])->middleware(['auth:sanctum', 'signed']);
+});
 
 //Route d'inscription et de connexion du coach
 Route::prefix('coach')->group(function () {
