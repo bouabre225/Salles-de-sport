@@ -12,8 +12,14 @@ use App\Http\Controllers\Public\CoachController;
 
 //Route d'inscription et de connexion de l'utilisateur
 Route::prefix('user')->group(function () {
-    Route::post('/register', [UserController::class, 'register']);
-    Route::post('/login', [UserController::class, 'login']);
+    Route::post('/register', [UserController::class, 'register'])->name("register");
+    Route::post('/login', [UserController::class, 'login'])->name("login");
+
+    /*Route::get('/login', function () {
+        return response()->json([
+            'message' => 'Utilisez POST api/user/login pour vous connecter.'
+        ]);
+    })->name('login');*/
 
     //Route de reinitialisation du mot de passe
     Route::post('/reset-password', [UserController::class, 'resetPassword']);
@@ -25,14 +31,16 @@ Route::prefix('email')->group(function () {
     //Envoyer l'email de verification 
     Route::post('/verify', [UserController::class, 'sendVerificationEmail'])->middleware(['auth:sanctum']);
 
+    //Route::get('/verify/{id}', [UserController::class, 'verifyEmail'])->name('verify.email');
+
     //Verification de l'email
-    Route::get('/verify/{id}/{hash}', [UserController::class, 'verifyEmail'])->middleware(['auth:sanctum', 'signed']);
+    Route::get('/verify/{id}/{hash}', [UserController::class, 'verifyEmail'])->name("verify.email")->middleware(['auth:sanctum', 'signed']);
 });
 
 //Route d'inscription et de connexion du coach
 Route::prefix('coach')->group(function () {
-    Route::post('/register', [CoachController::class, 'register']);
-    Route::post('/login', [CoachController::class, 'login']);
+    Route::post('/register', [CoachController::class, 'register'])->name("coach.register");
+    Route::post('/login', [CoachController::class, 'login'])->name("coach.login");
 });
 
 //Route de connexion via les providers
@@ -53,3 +61,4 @@ Route::middleware('auth:sanctum')->prefix('coach')->group(function () {
 Route::prefix('salles')->group(function () {
     Route::post('/create', [SalleController::class, 'create']);
 });
+
