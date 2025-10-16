@@ -37,6 +37,9 @@ class UserController extends Controller
             // Générer un token Sanctum
             $token = $user->createToken('auth-token')->plainTextToken;
 
+            //envoyer un email de verification
+            $user->sendEmailVerificationNotification();
+
             //retourne la reponse en cas de succes
             return response()->json([
                 'error' => false,
@@ -176,23 +179,24 @@ class UserController extends Controller
     /**
      * Verification de l'email
      */
-    public function verifyEmail(EmailVerificationRequest $request) {
+    public function verifyEmail(EmailVerificationRequest $request, $id) {
         try {
-            //verification de l'email
-            $request->fulfill();
-
-            return response()->json([
-                'error' => false,
-                'message' => 'Email verifie',
-                'data' => null,
-            ], 200);
-        } catch (\Exception $e) {
+            $user = Utilisateur::findOrFail($id);
+            if ($user->hasVerifiedEmail()) {
+                return response()->json(['message' => 'Email déjà vérifié']);
+            }
+    
+            $user->markEmailAsVerified();
+            event(new Verified($user));
+    
+            return response()->json(['message' => 'Email vérifié avec succès']);
+            } catch (\Exception $e) {
             //retourne la reponse en cas d'erreur
             return response()->json([
                 'error' => true,
                 'message' => 'Une erreur est survenue lors de la verification de l\'email'. $e->getMessage(),
                 'data' => null,
-            ], 500);
+            ], 200);
         }
     }
 
