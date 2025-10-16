@@ -7,7 +7,7 @@ use Illuminate\Notifications\Notifiable;
 use Laravel\Sanctum\HasApiTokens;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Auth\MustVerifyEmail;
-
+use App\Notifications\VerifyApiEmail;
 
 
 class Utilisateur extends Authenticatable implements MustVerifyEmail
@@ -39,4 +39,9 @@ class Utilisateur extends Authenticatable implements MustVerifyEmail
     protected $casts = [
         'email_verified_at' => 'datetime',
     ];
+
+    public function sendEmailVerificationNotification()
+    {
+        $this->notify(new VerifyApiEmail);
+    }
 }
